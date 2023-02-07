@@ -7,16 +7,21 @@ utilities/
 	Save_model
 	
 	Load model (custom for each kind of model, optionnal)
-Train_func
-	
 
-Main_train (load_data->train->save_model)
+Preprocessing/
 
-Gridsearch(eval_only ?)
+Train/ #pipeline training (load_data->train->save_model)
+
+Records/	#saved models, metrics
 
 
-Finetunning\
-	load_data ->load_pretrained
-	Model_finetunning:Load weight + set up freeze (param)
+
+Models/ 
+	-différent modèle, le modèle DeepBrain est changé, pour être fine tune plus facilement via un dictionnaire de paramètre
+	il peut ensuite être traité comme n'importe quel modèle
+	même dossier qu'avant dsl pour la majuscule
+
+Evaluation/
+	Validation HCP:pipeline de validation sur les données RAW HCP
 	
 	
