@@ -37,7 +37,7 @@ from utilities.model_description import get_n_parameters
 
 from Train.train_func import net_train, train_evaluate
 
-from models.model import DeepBrain
+from Models.model import DeepBrain
 
 
 
@@ -66,10 +66,10 @@ read_path = os.path.abspath(path+"DATA_RAW")
 #parameters training
 parameters_training=[
     {"name": "lr", "type": "range", "bounds": [1e-6, 0.04], "log_scale": True},
-    {"name": "batchsize", "type": "range", "bounds": [2, 3]},
-    {"name": "momentum", "type": "range", "bounds": [0.1, 0.99]},
-    {"name": "num_epochs", "type": "range", "bounds": [10, 80]},
-    {"name": "step_size", "type": "range", "bounds": [20, 40]},
+    #{"name": "batchsize", "type": "range", "bounds": [2, 3]},
+    #{"name": "momentum", "type": "range", "bounds": [0.1, 0.99]},
+    #{"name": "num_epochs", "type": "range", "bounds": [10, 80]},#
+    #{"name": "step_size", "type": "range", "bounds": [20, 40]},
 ]
 
 
@@ -111,7 +111,7 @@ model.to(device)
 
 
 
-
+total_trial=1
 
 
 
@@ -128,7 +128,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 best_parameters, values, experiment, model = optimize(
     parameters=parameters_training,
 
-    total_trials=20,
+    total_trials=total_trial,
     evaluation_function=lambda x: train_evaluate(x, train_dataset, val_dataset
                                                  , model, dtype, device),
     objective_name='accuracy',
