@@ -9,6 +9,7 @@ Created on Mon Feb  6 11:58:19 2023
 
 import torch
 from sklearn.metrics import confusion_matrix, accuracy_score
+import matplotlib.pyplot as plt
 import seaborn as sns
 
 
@@ -29,8 +30,8 @@ def get_prediction(model,dataset_loader,dtype,device):
 
 
 
-def plot_confusion_matrix(y_true, y_pred, labels):
-    CM=confusion_matrix(y_true, y_pred)labels=labels)
+def plot_confusion_matrix(y_true, y_pred, labels=None):
+    CM=confusion_matrix(y_true, y_pred, labels=labels)
     sns.heatmap(CM,annot=True)
     plt.title("Matrice de confusion")
     plt.plot()

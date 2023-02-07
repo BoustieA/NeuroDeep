@@ -1,0 +1,22 @@
+
+utilities/
+	File manager
+		gather files name
+		Dataset
+
+	Save_model
+	
+	Load model (custom for each kind of model, optionnal)
+Train_func
+	
+
+Main_train (load_data->train->save_model)
+
+Gridsearch(eval_only ?)
+
+
+Finetunning\
+	load_data ->load_pretrained
+	Model_finetunning:Load weight + set up freeze (param)
+	
+	
