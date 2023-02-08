@@ -53,22 +53,12 @@ model = S3ConvXFCResnet(27,7)
 
 ##Destination fichier
 
-file_list = []
-
-
-for path, folders, files in os.walk(path):
-    for file in files:
-        if fnmatch.fnmatch(file, '*transformed_max.npy'):
-            file_list.append(os.path.join(path, file))
-
-file_list.sort()
-
 labels = ["EMOTION","GAMBLING","LANGUAGE","MOTOR","RELATIONAL","SOCIAL","WM"]
 
             #'*mental.transformed_max.npy*'
 file_list, label_list = gather_list_label_file(read_path,labels,extension="npy")
 
-
+#TODO split data
 train_dataset = BrainDataset(file_list, label_list, is_train=True)
 val_dataset = BrainDataset(file_list, label_list, is_train=False)
 label_list = np.array(label_list)

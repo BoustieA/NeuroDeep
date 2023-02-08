@@ -76,7 +76,7 @@ labels = ["EMOTION","GAMBLING","LANGUAGE","MOTOR","RELATIONAL","SOCIAL","WM"]
 #dataset
 file_list, label_list = gather_list_label_file(path,labels,extension="nii.gz")
 
-test_df=BrainDataset(file_list, label_list, is_train=False)
+test_df = BrainDataset(file_list, label_list, is_train=False)
 test_loader = torch.utils.data.DataLoader(test_df,
                             batch_size=batch_size,#batch_size=parameterization.get("batchsize", 3),
                             shuffle=True,

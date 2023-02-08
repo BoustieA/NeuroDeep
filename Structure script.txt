@@ -1,29 +1,28 @@
-..//DATA/DATA_HCP/DATA_RAW
-
 
 utilities/
-	File manager
-		gather files name
-		Dataset
-
-	Save_model
+	Dataset
+	Savemodel
 	
-	Load model (custom for each kind of model, optionnal)
-
 Preprocessing/
 
 Train/ #pipeline training (load_data->train->save_model)
+	Train_single_run (train one model from one set of hyperparameters)
+	
+	fake_train=debug script for loading and saving model
 
-Records/	#saved models, metrics
+Records/	trained_model
+		curves
 
 
 
 Models/ 
-	-différent modèle, le modèle DeepBrain est changé, pour être fine tune plus facilement via un dictionnaire de paramètre
+	-différent modèle, les classes compotrent l'options FT, 
+        pour être fine tune plus facilement via un dictionnaire de paramètre
 	il peut ensuite être traité comme n'importe quel modèle
-	même dossier qu'avant dsl pour la majuscule
 
 Evaluation/
 	Validation HCP:pipeline de validation sur les données RAW HCP
+	Metrics :fichier pour calculer quelques metrics
+	Feature_visualisation
 	
 	
