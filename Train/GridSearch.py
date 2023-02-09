@@ -28,16 +28,17 @@ from utilities.Savemodel import SaveBestModel
 import matplotlib.pyplot as plt
 
 from torch.utils.data import random_split
-
+from utilities.PATH import get_torch_datasets
 
 #personnal script
 
 from utilities.Dataset import NeuroData, BrainDataset, gather_list_label_file
 from utilities.model_description import get_n_parameters
 
-from Train.train_func import net_train, train_evaluate
+from Train.train_func_ddp import GS_train_evaluate, get_param_dic
 
-from Models.model import DeepBrain
+from Models.DeepBrain import DeepBrain
+from Models.resnet18 import S3ConvXFCResnet
 
 
 
@@ -56,60 +57,98 @@ dtype=torch.float
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
+#PARAMETERS for single run
 
-#path data
-path = "../DATA/DATA_HCP/test_code/"
-read_path = os.path.abspath(path+"DATA_RAW")
+
+model_name_save="test"
+
+#model_type
+model_architecture="resnet18"#"DeepBrain"
+
+#data choice
+param_data={"DATA":"HCP",
+            "processing":"raw"}
+
+#hyperparams
+hyperparams_file="param.txt"
+
+#FT param
+file_tuning = "FT_"+model_architecture+".txt"
+finetuning=True
+model_name_load="fake_resnet.pth"
+#checkpoint_24.pth.tar
+
 
 #parameters training
 parameters_training=[
     {"name": "lr", "type": "range", "bounds": [1e-6, 0.04], "log_scale": True},
-    #{"name": "batchsize", "type": "range", "bounds": [2, 3]},
-    #{"name": "momentum", "type": "range", "bounds": [0.1, 0.99]},
-    #{"name": "num_epochs", "type": "range", "bounds": [10, 80]},#
-    #{"name": "step_size", "type": "range", "bounds": [20, 40]},
+    {"name": "batchsize", "type": "range", "bounds": [2, 3]},
+    {"name": "momentum", "type": "range", "bounds": [0.1, 0.99]},
+    {"name": "num_epochs", "type": "range", "bounds": [10, 80]},#
+    {"name": "step_size", "type": "range", "bounds": [20, 40]},
+    {"name": "freeze", "type": "choice", "values": ["all","feature_extractore"]},
+    
 ]
+dic_param={"DDP":False}
+#PATH
+path_records = "Records/"
+path_records = os.path.abspath(path_records)
+
+path_records_model=os.path.join(path_records,"trained_models")
+path_curves = os.path.join(path_records,'Evaluation\learning curves')
+path_history =  os.path.join(path_records,'Evaluation\history')
+
+
+
+dic_param_save = {"path_records":path_records_model,
+                "model_name":model_name_save}
+
+
+dic_param["param_save"]=dic_param_save
+
+if finetuning:
+    #load parameters for finetuning
+    dic_FT=get_param_dic(file_tuning)
+    dic_FT["path_weights"]=os.path.join(path_records_model,model_name_load)
+
+
+
+#dataset
 
 
 
 
-
-
-labels = ["EMOTION","GAMBLING","LANGUAGE","MOTOR","RELATIONAL","SOCIAL","WM"]
-
-
+#mapping_dic={0:"all",1:"Feature_extractor"}
 
 
 
 
 #dataset
-file_list, label_list = gather_list_label_file(read_path,labels,extension="nii.gz")
+train_dataset, val_dataset = get_torch_datasets(**param_data)
 
-
-train_dataset = BrainDataset(file_list, label_list, is_train=True)
-val_dataset = BrainDataset(file_list, label_list, is_train=False)
 ##Loader unused since in train func(batch size impact training)
 
 ## load model
 
 #model
-model=DeepBrain()  
-#model=DeepBrain()
-#Find total parameters and trainable parameters
-get_n_parameters(model)
-
-model.to(device)
-
-
-#training loop
-
-
-
+if model_architecture=="resnet18":
+    model=S3ConvXFCResnet(27,8)
+    get_n_parameters(model)#Find total parameters and trainable parameters
+    model=S3ConvXFCResnet#need to be reinstanciate for each train (start from scratch)
+elif model_architecture=="DeepBrain":
+    model=DeepBrain()
+    get_n_parameters(model)#Find total parameters and trainable parameters
+    model=DeepBrain#need to be reinstanciate for each train (start from scratch)
+    
+    
 
 
 
 
-total_trial=1
+
+
+
+total_trial=2
 
 
 
@@ -127,8 +166,8 @@ best_parameters, values, experiment, model = optimize(
     parameters=parameters_training,
 
     total_trials=total_trial,
-    evaluation_function=lambda x: train_evaluate(x, train_dataset, val_dataset
-                                                 , model, dtype, device),
+    evaluation_function = lambda x: GS_train_evaluate(x, train_dataset, val_dataset
+                                                 , model, dic_param, dic_FT , True, dtype),
     objective_name='accuracy',
 )
 
@@ -152,7 +191,7 @@ best_objective_plot = optimization_trace_single_method(
     ylabel="Classification Accuracy, %",
 )
 
-assert False
+
 
 render(best_objective_plot)
 
@@ -164,134 +203,12 @@ best_arm_name = df.arm_name[df['mean'] == df['mean'].max()].values[0]
 best_arm = experiment.arms_by_name[best_arm_name]
 print(best_arm)
 
-parame=best_arm._parameters
+param=best_arm._parameters
 print(param)
 print(param, file=open("param.txt", "a"))
 
 #save
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-"""
-lambda x :train_evaluate(x
-                        , train_set, val_set, model
-                        , dtype,device),
-"""
-
-
-
-assert False
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-file_list = []
-
-for path, folders, files in os.walk(path):
-    for file in files:
-        if fnmatch.fnmatch(file, '*train.npy'):
-            file_list.append(os.path.join(path, file))
-
-print(len(file_list))
-file_list.sort()
-
-label_list = []
-
-for file in file_list:
-    if fnmatch.fnmatch(file, '*gene_train.npy*' ):
-            label = 0
-            label_list.append(label)
-    elif fnmatch.fnmatch(file, '*rap_train.npy*' ):
-                label = 1
-                label_list.append(label)
-
-
-## Select samples and smoothed samples so they are in the same set
-
-swar = file_list[0:200]
-war = file_list[200:400]
-
-swar_lab = label_list[0:200]
-war_lab = label_list[200:400]
-
-train_l = swar[0:140] + war[0:140]
-train_lab = swar_lab[0:140] + war_lab[0:140]
-
-print(len(train_l))
-
-
-val_l = swar[140:160] + war[140:160]
-val_lab = swar_lab[140:160] + war_lab[140:160]
-
-## Create sets
-
-train_set = NeuroData(train_l, train_lab)
-val_set = NeuroData(val_l, val_lab)
-
-print(len(train_set))
-print(len(val_set))
-
-##Define model
-model = DeepBrain()
-model.load_state_dict(torch.load('./models/checkpoint_24.pth.tar')['state_dict'])
-
-
-##Freeze param
-for param in model.parameters():
-    param.requires_grad = False
-
-##Recreate FC layers
-model.classifier = nn.Sequential(
-    nn.Linear(64, 64),
-    nn.ReLU(inplace=True),
-    nn.Linear(64, 2),
-    nn.LogSoftmax(dim=1))
-
-#Find total parameters and trainable parameters
-total_params = sum(p.numel() for p in model.parameters())
-print(f'{total_params:,} total parameters.')
-total_trainable_params = sum(
-    p.numel() for p in model.parameters() if p.requires_grad)
-print(f'{total_trainable_params:,} training parameters.')
-
-##train function
 
 
 

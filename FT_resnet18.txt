@@ -1,0 +1,5 @@
+{"reset": "last_layer",
+ "n_output":8,
+ "freeze_type":"feature_extractor",
+ "drop_out":False
+ }

@@ -43,6 +43,6 @@ def save_model(epochs, model, optimizer, criterion, scheduler, parameters):
                 'epoch': epochs,
                 'optimizer_state_dict': optimizer.state_dict(),
                 'scheduler_state_dict':scheduler.state_dict(),
-                'model_state_dict': model.state_dict(),
+                'state_dict': model.state_dict(),
                 'loss': criterion,
                 }, path_save)

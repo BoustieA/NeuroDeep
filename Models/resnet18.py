@@ -354,7 +354,7 @@ class S3ResNet(nn.Module):
         
         
 class S3ConvXFCResnet(nn.Module):
-    def __init__(self, in_channel, num_classes,drop_out=False):
+    def __init__(self, in_channel=27, num_classes=8,drop_out=False):
         super(S3ConvXFCResnet, self).__init__()
         self.n_classes=num_classes
         
